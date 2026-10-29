@@ -1,0 +1,190 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Quick Mart — Retail Store Management System{% endblock %}</title>
+  <meta name="description" content="Quick Mart - High-performance retail point-of-sale, inventory and store management system">
+
+  <!-- Favicon icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
+
+  <!-- Google Fonts: Plus Jakarta Sans & DM Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- CSRF Token Meta -->
+  <meta name="csrf-token" content="{{ csrf_token }}">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <div class="app-layout">
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-badge">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8" cy="21" r="1"/>
+              <circle cx="19" cy="21" r="1"/>
+              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title">Quick Mart</div>
+            <div class="brand-subtitle">Retail Management</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <span class="nav-label">Main Menu</span>
+
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard:index' %}" class="nav-item {% if request.resolver_match and request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+
+        <!-- Billing POS -->
+        <a href="{% url 'billing:new_bill' %}" class="nav-item {% if request.resolver_match and request.resolver_match.view_name == 'billing:new_bill' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <line x1="2" y1="10" x2="22" y2="10"/>
+            <line x1="6" y1="15" x2="10" y2="15"/>
+          </svg>
+          <span>New Sale (POS)</span>
+          <span class="nav-badge">POS</span>
+        </a>
+
+        <!-- Billing History -->
+        <a href="{% url 'billing:index' %}" class="nav-item {% if request.resolver_match and request.resolver_match.view_name == 'billing:index' or request.resolver_match and request.resolver_match.view_name == 'billing:receipt' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Bills & Invoices</span>
+        </a>
+
+        <!-- Inventory -->
+        <a href="{% url 'inventory:index' %}" class="nav-item {% if request.resolver_match and request.resolver_match.app_name == 'inventory' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+          <span>Inventory</span>
+        </a>
+
+        <!-- Suppliers -->
+        <a href="{% url 'suppliers:index' %}" class="nav-item {% if request.resolver_match and request.resolver_match.app_name == 'suppliers' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span>Suppliers</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div class="user-avatar">
+            {{ user.name.0|upper }}
+          </div>
+          <div class="user-meta">
+            <div class="user-name" title="{{ user.name }}">{{ user.name }}</div>
+            <span class="user-role-badge">{{ user.role }}</span>
+          </div>
+          <a href="{% url 'auth:logout' %}" class="btn-logout" title="Log Out" id="logout-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <div class="main-content {% if not user.is_authenticated %}full-width{% endif %}">
+      {% if user.is_authenticated %}
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-toggle-btn" id="mobile-sidebar-toggle" aria-label="Toggle navigation">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div>
+            <h1 class="page-title">{% block page_heading %}Dashboard{% endblock %}</h1>
+            <div class="page-subtitle">{% block page_subheading %}Welcome to Quick Mart Retail Management{% endblock %}</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="current-date-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span id="current-live-date">Store Terminal Online</span>
+          </div>
+          {% block topbar_actions %}{% endblock %}
+        </div>
+      </header>
+      {% endif %}
+
+      <main class="page-body">
+        <!-- Flash Messages -->
+        {% if messages %}
+          <div class="flash-container">
+            {% for message in messages %}
+              <div class="flash-alert {{ message.tags }}">
+                <span>{{ message }}</span>
+                <button type="button" class="flash-close-btn">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if not_found %}
+          <div style="text-align: center; padding: 60px 20px;">
+            <h2 style="font-size: 2.5rem; color: var(--color-orange); margin-bottom: 12px;">404</h2>
+            <p style="font-size: 1.1rem; color: var(--color-dark-muted); margin-bottom: 24px;">The page you are looking for does not exist in Quick Mart.</p>
+            <a href="{% url 'dashboard:index' %}" class="btn btn-primary">Return to Dashboard</a>
+          </div>
+        {% else %}
+          {% block content %}{% endblock %}
+        {% endif %}
+      </main>
+    </div>
+  </div>
+
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

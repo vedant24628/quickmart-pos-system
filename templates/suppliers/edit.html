@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static quickmart_tags %}
+
+{% block title %}Edit Supplier — {{ supplier.name }} — Quick Mart{% endblock %}
+{% block page_heading %}Edit Supplier Profile{% endblock %}
+{% block page_subheading %}Update vendor contact details and supply terms{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'suppliers:index' %}" class="btn btn-secondary btn-sm">
+    &larr; Back to Suppliers
+  </a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 650px; margin: 0 auto;">
+  <div class="table-card" style="padding: 30px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border);">
+      <div>
+        <h2 style="font-size: 1.3rem; font-weight: 800;">{{ supplier.name }}</h2>
+        <span style="font-size: 0.85rem; color: var(--color-dark-muted);">Vendor ID: SUP-{{ supplier.id }}</span>
+      </div>
+      <div>
+        <span style="background-color: var(--color-blue-light); color: var(--color-blue-deep); padding: 4px 10px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700;">
+          {{ supplier.products.count }} Linked Products
+        </span>
+      </div>
+    </div>
+
+    <form method="POST" action="{% url 'suppliers:edit' supplier.id %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Supplier Company / Name *</label>
+        <input type="text" name="name" class="form-control" value="{{ supplier.name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contact Person</label>
+        <input type="text" name="contact_person" class="form-control" value="{{ supplier.contact_person|default:'' }}" placeholder="e.g. Rajesh Sharma">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" name="phone" class="form-control" value="{{ supplier.phone|default:'' }}" placeholder="+91 98765 43210">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" name="email" class="form-control" value="{{ supplier.email|default:'' }}" placeholder="vendor@example.com">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Warehouse Address / Notes</label>
+        <textarea name="address" class="form-control" rows="3">{{ supplier.address|default:'' }}</textarea>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--color-border);">
+        <a href="{% url 'suppliers:index' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update Supplier</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

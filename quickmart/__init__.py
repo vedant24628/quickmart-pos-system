@@ -1,0 +1,1 @@
+# QuickMart Django Project

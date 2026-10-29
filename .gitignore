@@ -1,0 +1,65 @@
+# ==========================================
+# Quick Mart POS System - Git Ignore Rules
+# ==========================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Caches and runtime artifacts
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# IDE and Editor Configurations
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+*.stackdump
+
+# Logs and Temporary Files
+*.log
+scratch/
+tmp/
+*.tmp
+
+# Playwright artifacts
+test-results/
+playwright-report/
+
+# Note on Database:
+# quickmart.db contains sanitized demo retail data (86 demo products,
+# mock bills, and staff demo accounts) ensuring immediate out-of-the-box
+# execution for evaluators and recruiters. Real production databases
+# must never be committed.

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static quickmart_tags %}
+
+{% block title %}Receipt — {{ bill.bill_number }} — Quick Mart{% endblock %}
+{% block page_heading %}Tax Invoice / Receipt{% endblock %}
+{% block page_subheading %}Invoice generated successfully for {{ bill.customer_name }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'billing:new_bill' %}" class="btn btn-primary btn-sm">
+    + New Sale
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="receipt-container">
+  
+  <div class="receipt-card">
+    <div class="receipt-header">
+      <div class="receipt-logo-title">QUICK MART</div>
+      <div class="receipt-sub">Retail Store Management & POS System</div>
+      <div class="receipt-sub">GSTIN: 27AABCT8841Z1ZP &bull; Tax Invoice</div>
+    </div>
+
+    <div class="receipt-meta-grid">
+      <div class="meta-item">
+        <b>Invoice No:</b> {{ bill.bill_number }}
+      </div>
+      <div class="meta-item" style="text-align: right;">
+        <b>Date:</b> {{ bill.formatted_date }}
+      </div>
+      <div class="meta-item">
+        <b>Customer:</b> {{ bill.customer_name }}
+      </div>
+      <div class="meta-item" style="text-align: right;">
+        <b>Payment:</b> {{ bill.payment_method }}
+      </div>
+      <div class="meta-item">
+        <b>Mobile:</b> {{ bill.customer_mobile }}
+      </div>
+      <div class="meta-item" style="text-align: right;">
+        <b>Terminal:</b> Cashier #1
+      </div>
+    </div>
+
+    <table class="receipt-items-table">
+      <thead>
+        <tr>
+          <th style="width: 40px;">#</th>
+          <th>Item Description</th>
+          <th style="text-align: right; width: 80px;">Rate</th>
+          <th style="text-align: center; width: 50px;">Qty</th>
+          <th style="text-align: right; width: 100px;">Total (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in bill.items.all %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><b>{{ item.product_name }}</b></td>
+          <td style="text-align: right;">₹{{ item.price_at_sale|currency }}</td>
+          <td style="text-align: center;">{{ item.quantity }}</td>
+          <td style="text-align: right; font-weight: 600;">₹{{ item.total_price|currency }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="receipt-summary-block">
+      <div style="display: flex; justify-content: space-between;">
+        <span>Item Subtotal:</span>
+        <b>₹{{ bill.subtotal|currency }}</b>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>SGST (9.0%):</span>
+        <span>₹{{ bill.sgst|currency }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>CGST (9.0%):</span>
+        <span>₹{{ bill.cgst|currency }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-top: 2px dashed var(--color-dark); padding-top: 10px; margin-top: 6px; font-size: 1.15rem;">
+        <span style="font-family: var(--font-heading); font-weight: 700;">GRAND TOTAL:</span>
+        <span style="font-family: var(--font-heading); font-weight: 700; color: var(--color-orange); font-variant-numeric: tabular-nums;">
+          ₹{{ bill.total_amount|currency }}
+        </span>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; padding-top: 16px; border-top: 1px dashed var(--color-border); font-size: 0.8rem; color: var(--color-dark-muted);">
+      <p style="font-weight: 600; color: var(--color-dark);">Thank you for shopping at Quick Mart!</p>
+      <p>Goods once sold can be exchanged within 7 days with this original receipt.</p>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="receipt-actions">
+    <button type="button" class="btn btn-primary" onclick="window.print()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 6 2 18 2 18 9"/>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8"/>
+      </svg>
+      <span>Print Receipt</span>
+    </button>
+
+    <a href="{% url 'billing:generate_pdf' bill.id %}" class="btn btn-blue" id="btn-download-pdf">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>Download PDF</span>
+    </a>
+
+    <a href="{% url 'billing:new_bill' %}" class="btn btn-secondary">
+      New Sale
+    </a>
+  </div>
+
+</div>
+{% endblock %}

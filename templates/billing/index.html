@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static quickmart_tags %}
+
+{% block title %}Bills & Invoices — Quick Mart{% endblock %}
+{% block page_heading %}Invoices & Billing History{% endblock %}
+{% block page_subheading %}Review all registered sales receipts, customers and tax breakdowns{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'billing:new_bill' %}" class="btn btn-primary btn-sm">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    <span>+ New Sale</span>
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="table-card">
+  <div class="table-toolbar">
+    <div>
+      <h2 style="font-size: 1.15rem; font-weight: 700;">All Issued Sales Invoices ({{ bills|length }})</h2>
+      <span style="font-size: 0.8rem; color: var(--color-dark-muted);">Click on any bill number to inspect items or download PDF receipt</span>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Customer Name</th>
+          <th>Mobile No</th>
+          <th>Items</th>
+          <th>Date & Time</th>
+          <th>Payment</th>
+          <th>Total Amount</th>
+          <th style="text-align: right;">Receipt Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bill in bills %}
+        <tr>
+          <td>
+            <a href="{% url 'billing:receipt' bill.id %}" style="font-weight: 700; color: var(--color-orange);">
+              {{ bill.bill_number }}
+            </a>
+          </td>
+          <td><b>{{ bill.customer_name }}</b></td>
+          <td>{{ bill.customer_mobile }}</td>
+          <td>
+            <span style="background: #f1f5f9; padding: 2px 7px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600;">
+              {{ bill.items.count }} items
+            </span>
+          </td>
+          <td>{{ bill.formatted_date }}</td>
+          <td>
+            <span style="background: var(--color-blue-light); color: var(--color-blue-deep); padding: 3px 8px; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.8rem;">
+              {{ bill.payment_method }}
+            </span>
+          </td>
+          <td>
+            <b style="font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; font-variant-numeric: tabular-nums;">₹{{ bill.total_amount|currency }}</b>
+          </td>
+          <td style="text-align: right;">
+            <div class="table-actions" style="justify-content: flex-end;">
+              <a href="{% url 'billing:receipt' bill.id %}" class="btn btn-secondary btn-sm" title="View Receipt">
+                View Receipt
+              </a>
+              <a href="{% url 'billing:generate_pdf' bill.id %}" class="btn btn-blue btn-sm" title="Download Official PDF">
+                PDF
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 40px; color: var(--color-dark-muted);">
+            No bills registered yet. <a href="{% url 'billing:new_bill' %}" style="color: var(--color-orange); font-weight: bold;">Launch POS Checkout</a> to process your first customer sale!
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

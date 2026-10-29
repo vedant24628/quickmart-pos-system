@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static quickmart_tags %}
+
+{% block title %}Suppliers Directory — Quick Mart{% endblock %}
+{% block page_heading %}Suppliers Directory{% endblock %}
+{% block page_subheading %}Manage wholesale vendor contacts, supply agreements, and lead times{% endblock %}
+
+{% block topbar_actions %}
+  <button type="button" class="btn btn-primary btn-sm" data-modal-target="#add-supplier-modal" id="open-add-supplier-modal">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    <span>Add Supplier</span>
+  </button>
+{% endblock %}
+
+{% block content %}
+<div class="table-card">
+  <div class="table-toolbar">
+    <form method="GET" action="{% url 'suppliers:index' %}" class="table-search-group">
+      <div class="search-input-wrap">
+        <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Search supplier by name, contact, phone..." id="supplier-search">
+      </div>
+      <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+      {% if search_query %}
+        <a href="{% url 'suppliers:index' %}" class="btn btn-sm" style="background:#fee2e2; color:#b91c1c;">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Supplier Company</th>
+          <th>Contact Person</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Warehouse / Address</th>
+          <th>Products Supplied</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td>
+            <div style="font-weight: 700; color: var(--color-dark);">{{ s.name }}</div>
+            <div style="font-size: 0.75rem; color: var(--color-dark-muted);">Vendor ID: SUP-{{ s.id }}</div>
+          </td>
+          <td>
+            <b>{{ s.contact_person|default:'N/A' }}</b>
+          </td>
+          <td>
+            {% if s.phone %}
+              <a href="tel:{{ s.phone }}" style="color: var(--color-orange); font-weight: 600;">{{ s.phone }}</a>
+            {% else %}
+              <span style="color: var(--color-dark-muted);">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if s.email %}
+              <a href="mailto:{{ s.email }}" style="color: var(--color-blue); text-decoration: underline;">{{ s.email }}</a>
+            {% else %}
+              <span style="color: var(--color-dark-muted);">—</span>
+            {% endif %}
+          </td>
+          <td style="max-width: 240px; font-size: 0.85rem; color: var(--color-dark-muted);">
+            {{ s.address|default:'—' }}
+          </td>
+          <td>
+            <span style="background-color: var(--color-cream-card); color: var(--color-dark); border: 1px solid var(--color-yellow); padding: 3px 8px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;">
+              {{ s.products.count }} products
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <div class="table-actions" style="justify-content: flex-end;">
+              <a href="{% url 'suppliers:edit' s.id %}" class="btn btn-secondary btn-sm" title="Edit Supplier">
+                Edit
+              </a>
+              <form method="POST" action="{% url 'suppliers:delete' s.id %}" onsubmit="return confirm('Are you sure you want to delete supplier {{ s.name }}? Linked products will be kept as unassigned.');" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" title="Delete Supplier">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 40px; color: var(--color-dark-muted);">
+            No suppliers found. Click "Add Supplier" above to register your first vendor!
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Supplier Modal Popup -->
+<div class="modal-overlay" id="add-supplier-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title">Register New Supplier Partner</h3>
+      <button type="button" class="modal-close">&times;</button>
+    </div>
+    <form method="POST" action="{% url 'suppliers:add' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Supplier Company / Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Apex Agri Fresh Ltd" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Contact Person</label>
+          <input type="text" name="contact_person" class="form-control" placeholder="e.g. Vikram Singhania">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="email" class="form-control" placeholder="vendor@example.com">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Warehouse Address / Notes</label>
+          <textarea name="address" class="form-control" rows="3" placeholder="Enter street address, city, warehouse unit..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Supplier</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

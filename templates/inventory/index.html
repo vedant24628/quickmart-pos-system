@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static quickmart_tags %}
+
+{% block title %}Inventory Management — Quick Mart{% endblock %}
+{% block page_heading %}Inventory Management{% endblock %}
+{% block page_subheading %}Track, audit, restock and organize retail store catalog{% endblock %}
+
+{% block topbar_actions %}
+  <button type="button" class="btn btn-primary btn-sm" data-modal-target="#add-product-modal" id="open-add-product-modal">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    <span>Add New Product</span>
+  </button>
+{% endblock %}
+
+{% block content %}
+<!-- Inventory Overview Summary Chips -->
+<div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+  <a href="{% url 'inventory:index' %}" class="btn {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+    All Items ({{ products|length }})
+  </a>
+  <a href="{% url 'inventory:index' %}?status=critical{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="status-badge status-critical" style="padding: 6px 14px; text-decoration: none; font-size: 0.85rem;">
+    🔴 Critical (&lt; 10)
+  </a>
+  <a href="{% url 'inventory:index' %}?status=low{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="status-badge status-low" style="padding: 6px 14px; text-decoration: none; font-size: 0.85rem;">
+    🟡 Low Stock (10–30)
+  </a>
+  <a href="{% url 'inventory:index' %}?status=good{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="status-badge status-good" style="padding: 6px 14px; text-decoration: none; font-size: 0.85rem;">
+    🟢 Healthy Stock (&gt; 30)
+  </a>
+</div>
+
+<!-- Table Card with Search & Filters -->
+<div class="table-card">
+  <div class="table-toolbar">
+    <form method="GET" action="{% url 'inventory:index' %}" class="table-search-group" style="width: 100%; max-width: none; flex-wrap: wrap;">
+      <!-- Search Input -->
+      <div class="search-input-wrap" style="flex: 2; min-width: 220px;">
+        <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Search products by name..." id="inventory-search">
+      </div>
+
+      <!-- Category Filter -->
+      <div style="flex: 1; min-width: 160px;">
+        <select name="category" class="form-control" style="background-color: #f8fafc;" onchange="this.form.submit()">
+          <option value="">All 7 Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Hidden preservation fields -->
+      {% if status_filter %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+      {% endif %}
+      <input type="hidden" name="sort" value="{{ sort_by }}">
+      <input type="hidden" name="order" value="{{ sort_order }}">
+
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        {% if search_query or selected_category or status_filter %}
+          <a href="{% url 'inventory:index' %}" class="btn btn-sm" style="background:#fee2e2; color:#b91c1c;">Reset</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>
+            <a href="{% url 'inventory:index' %}?sort=name&order={% if sort_by == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+              Product Name {% if sort_by == 'name' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+            </a>
+          </th>
+          <th>
+            <a href="{% url 'inventory:index' %}?sort=category&order={% if sort_by == 'category' and sort_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+              Category {% if sort_by == 'category' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+            </a>
+          </th>
+          <th>
+            <a href="{% url 'inventory:index' %}?sort=price&order={% if sort_by == 'price' and sort_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+              Unit Price (₹) {% if sort_by == 'price' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+            </a>
+          </th>
+          <th>
+            <a href="{% url 'inventory:index' %}?sort=stock&order={% if sort_by == 'stock' and sort_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+              Available Stock {% if sort_by == 'stock' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+            </a>
+          </th>
+          <th>Stock Alert Status</th>
+          <th>Supplier</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>
+            <div style="font-weight: 700; color: var(--color-dark);">{{ p.name }}</div>
+            <div style="font-size: 0.75rem; color: var(--color-dark-muted);">SKU: QM-PRD-{{ p.id }}</div>
+          </td>
+          <td>
+            <span style="background-color: var(--color-blue-light); color: var(--color-blue-deep); padding: 3px 8px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600;">
+              {{ p.category }}
+            </span>
+          </td>
+          <td>
+            <b style="font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; font-variant-numeric: tabular-nums;">₹{{ p.price|currency }}</b>
+          </td>
+          <td>
+            <b style="font-size: 0.95rem;">{{ p.stock_quantity }} units</b>
+          </td>
+          <td>
+            <span class="status-badge {{ p.stock_status }}">
+              {{ p.stock_label }}
+            </span>
+          </td>
+          <td>
+            {% if p.supplier %}
+              <span title="{{ p.supplier.phone }}">{{ p.supplier.name }}</span>
+            {% else %}
+              <span style="color: var(--color-dark-muted); font-style: italic;">Unassigned</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div class="table-actions" style="justify-content: flex-end;">
+              <a href="{% url 'inventory:edit' p.id %}" class="btn btn-secondary btn-sm" title="Edit Product">
+                Edit
+              </a>
+              <form method="POST" action="{% url 'inventory:delete' p.id %}" onsubmit="return confirm('Are you sure you want to delete product {{ p.name }}?');" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" title="Delete Product">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 40px; color: var(--color-dark-muted);">
+            No products match the selected criteria.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Product Modal Popup -->
+<div class="modal-overlay" id="add-product-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title">Add New Product to Inventory</h3>
+      <button type="button" class="modal-close">&times;</button>
+    </div>
+    <form method="POST" action="{% url 'inventory:add' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Product Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Organic Brown Eggs (Pack of 6)" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select name="category" class="form-control" required>
+            <option value="" disabled selected>Select category...</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Unit Price (₹) *</label>
+            <input type="number" step="0.01" min="0" name="price" class="form-control" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Initial Stock Qty *</label>
+            <input type="number" min="0" name="stock_quantity" class="form-control" placeholder="0" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Supplier Partner</label>
+          <select name="supplier_id" class="form-control">
+            <option value="">None / Direct Wholesale</option>
+            {% for s in suppliers %}
+              <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
